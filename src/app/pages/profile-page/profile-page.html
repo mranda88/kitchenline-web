@@ -1,0 +1,101 @@
+<main class="page">
+  <header class="head">
+    <p class="eyebrow">Player profile</p>
+    @if (isNew()) {
+      <h1>Build your program</h1>
+      <p class="sub">Six quick answers. Your workouts are built from them: higher skill and younger age mean more intensity.</p>
+    } @else {
+      <h1>Your profile</h1>
+      <p class="sub">Changes apply to your program right away if you haven't logged a workout this month. Otherwise they start next month.</p>
+    }
+  </header>
+
+  @if (loading()) {
+    <p class="card panel muted">Loading your profile…</p>
+  } @else {
+    <form class="card panel" (ngSubmit)="save()">
+
+      <div class="field">
+        <label for="age">Age</label>
+        <input id="age" name="age" type="number" inputmode="numeric" min="16" max="90"
+               placeholder="e.g. 34" [(ngModel)]="age">
+      </div>
+
+      <fieldset class="field">
+        <legend>Gender <span class="hint">Only used to suggest starting dumbbell weights</span></legend>
+        <div class="choices three">
+          @for (g of genders; track g.value) {
+            <label class="choice" [class.on]="gender() === g.value">
+              <input type="radio" name="gender" [value]="g.value"
+                     [checked]="gender() === g.value" (change)="gender.set(g.value)">
+              {{ g.label }}
+            </label>
+          }
+        </div>
+      </fieldset>
+
+      <fieldset class="field">
+        <legend>Skill rating <span class="hint">{{ skillDescription() }}</span></legend>
+        <div class="choices five">
+          @for (s of skillLevels; track s.value) {
+            <label class="choice mono" [class.on]="skill() === s.value">
+              <input type="radio" name="skill" [value]="s.value"
+                     [checked]="skill() === s.value" (change)="skill.set(s.value)">
+              {{ s.rating }}
+            </label>
+          }
+        </div>
+      </fieldset>
+
+      <div class="counts">
+        <div class="field">
+          <span class="label" id="drills-label">Drill sessions / week</span>
+          <div class="stepper" role="group" aria-labelledby="drills-label">
+            <button type="button" (click)="bump(drills, -1, 0, 7)" aria-label="Fewer drill sessions">−</button>
+            <output aria-live="polite">{{ drills() }}</output>
+            <button type="button" (click)="bump(drills, 1, 0, 7)" aria-label="More drill sessions">+</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <span class="label" id="plays-label">Games played / week</span>
+          <div class="stepper" role="group" aria-labelledby="plays-label">
+            <button type="button" (click)="bump(plays, -1, 0, 7)" aria-label="Fewer games">−</button>
+            <output aria-live="polite">{{ plays() }}</output>
+            <button type="button" (click)="bump(plays, 1, 0, 7)" aria-label="More games">+</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <span class="label" id="workouts-label">Workouts you want / week</span>
+          <div class="stepper" role="group" aria-labelledby="workouts-label">
+            <button type="button" (click)="bump(workouts, -1, 1, 6)" aria-label="Fewer workouts">−</button>
+            <output aria-live="polite">{{ workouts() }}</output>
+            <button type="button" (click)="bump(workouts, 1, 1, 6)" aria-label="More workouts">+</button>
+          </div>
+        </div>
+      </div>
+
+      <p class="summary">
+        You're on court <strong>{{ courtSessions() }}×</strong> a week and want
+        <strong>{{ workouts() }}</strong> workout{{ workouts() === 1 ? '' : 's' }}.
+        @if (courtSessions() + workouts() >= 11) {
+          <span class="warn">That's a heavy week. Your program will trim leg volume and remind you to rest.</span>
+        }
+      </p>
+
+      @if (error()) {
+        <p class="error" role="alert">{{ error() }}</p>
+      }
+
+      <div class="actions">
+        @if (!isNew()) {
+          <a class="btn ghost" routerLink="/">Cancel</a>
+        }
+        <button class="btn" type="submit" [disabled]="saving()">
+          {{ saving() ? 'Saving…' : (isNew() ? 'Build my program' : 'Save changes') }}
+        </button>
+      </div>
+    </form>
+  }
+</main>

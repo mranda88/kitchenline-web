@@ -31,7 +31,7 @@ export class AuthPage {
       } else {
         await this.auth.login(this.email, this.password);
       }
-      await this.router.navigateByUrl('/');
+      await this.router.navigateByUrl(this.mode() === 'signup' ? '/profile' : '/');
     } catch (err) {
       this.error.set(errorMessage(err));
     } finally {

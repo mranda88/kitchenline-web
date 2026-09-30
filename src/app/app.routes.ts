@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { AuthPage } from './pages/auth-page/auth-page';
 import { HomePage } from './pages/home-page/home-page';
+import { ProfilePage } from './pages/profile-page/profile-page';
 import { authGuard, guestGuard } from './core/auth.guards';
 
 export const routes: Routes = [
@@ -10,6 +11,7 @@ export const routes: Routes = [
 
   // Only for people who ARE logged in
   { path: '', component: HomePage, canActivate: [authGuard] },
+  { path: 'profile', component: ProfilePage, canActivate: [authGuard] },
 
   // Any unknown address goes home (which sends you to login if needed)
   { path: '**', redirectTo: '' },

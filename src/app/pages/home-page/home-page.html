@@ -3,7 +3,21 @@
     <p class="eyebrow">Signed in</p>
     <h1>{{ auth.account()?.email }}</h1>
     <p>Plan: <strong>{{ auth.account()?.subscriptionStatus === 'ACTIVE' ? 'Member' : 'Free trial' }}</strong></p>
-    <p class="note">Your program screen arrives in step 6d.</p>
+
+    @if (profile() === undefined) {
+      <p class="note">Loading your profile…</p>
+    } @else if (profile(); as p) {
+      <p>
+        {{ p.age }} years old · {{ rating(p) }} rating ·
+        {{ p.drillsPerWeek + p.playsPerWeek }} court sessions and {{ p.workoutsPerWeek }} workouts a week
+      </p>
+      <a class="btn ghost" routerLink="/profile">Edit profile</a>
+      <p class="note">Your program screen arrives in step 6d.</p>
+    } @else {
+      <p class="note">Tell us about your game to get your program.</p>
+      <a class="btn" routerLink="/profile">Set up your profile</a>
+    }
+
     <button class="btn ghost" type="button" (click)="logout()">Log out</button>
   </div>
 </main>
