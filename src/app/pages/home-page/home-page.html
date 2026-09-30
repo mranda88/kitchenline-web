@@ -1,23 +1,169 @@
-<main class="home">
-  <div class="card panel">
-    <p class="eyebrow">Signed in</p>
-    <h1>{{ auth.account()?.email }}</h1>
-    <p>Plan: <strong>{{ auth.account()?.subscriptionStatus === 'ACTIVE' ? 'Member' : 'Free trial' }}</strong></p>
+<header class="top">
+  <div class="brand">
+    <svg width="36" height="36" viewBox="0 0 44 44" aria-hidden="true">
+      <rect x="2" y="6" width="40" height="32" rx="2" fill="none" stroke="var(--court)" stroke-width="2.5"/>
+      <line x1="22" y1="6" x2="22" y2="38" stroke="var(--ink)" stroke-width="2"/>
+      <line x1="16" y1="6" x2="16" y2="38" stroke="var(--kitchen)" stroke-width="2"/>
+      <line x1="28" y1="6" x2="28" y2="38" stroke="var(--kitchen)" stroke-width="2"/>
+      <circle cx="34" cy="14" r="5" fill="var(--ball)"/>
+    </svg>
+    <span class="name">Kitchen Line</span>
+  </div>
+  <nav class="nav">
+    <span class="pill" [class.on]="isMember()"><i></i>{{ isMember() ? 'Member' : 'Free trial' }}</span>
+    <a routerLink="/profile">Edit profile</a>
+    <button class="linkish" type="button" (click)="logout()">Log out</button>
+  </nav>
+</header>
 
-    @if (profile() === undefined) {
-      <p class="note">Loading your profile…</p>
-    } @else if (profile(); as p) {
-      <p>
-        {{ p.age }} years old · {{ rating(p) }} rating ·
-        {{ p.drillsPerWeek + p.playsPerWeek }} court sessions and {{ p.workoutsPerWeek }} workouts a week
-      </p>
-      <a class="btn ghost" routerLink="/profile">Edit profile</a>
-      <p class="note">Your program screen arrives in step 6d.</p>
-    } @else {
-      <p class="note">Tell us about your game to get your program.</p>
-      <a class="btn" routerLink="/profile">Set up your profile</a>
+<main class="wrap">
+  @if (error()) {
+    <p class="error banner" role="alert">{{ error() }}</p>
+  }
+
+  @if (loading()) {
+    <p class="card pad muted">Loading your program…</p>
+  } @else if (view(); as v) {
+
+    <!-- Summary -->
+    <section class="card summary">
+      <div class="sum-head">
+        <div>
+          <p class="eyebrow">Month {{ v.program.month }} program</p>
+          <h1>{{ v.program.intensity.label }} tier · {{ v.program.profile.workoutsPerWeek }} workouts a week</h1>
+        </div>
+        <div class="tier" [attr.aria-label]="'Intensity ' + v.program.intensity.tier + ' of 5'">
+          @for (i of [1, 2, 3, 4, 5]; track i) {
+            <i [class.on]="i <= v.program.intensity.tier" [style.height.px]="8 + i * 5"></i>
+          }
+          <span>{{ v.program.intensity.tier }}/5</span>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div><b>{{ rating() }}</b><span>Skill rating</span></div>
+        <div><b>{{ v.program.profile.drillsPerWeek + v.program.profile.playsPerWeek }}</b><span>Court sessions / wk</span></div>
+        <div><b>{{ v.completedCount }}/{{ v.totalWorkouts }}</b><span>Workouts done</span></div>
+        <div><b>{{ v.percentComplete }}%</b><span>This month</span></div>
+      </div>
+
+      <div>
+        <p class="eyebrow">Suggested week</p>
+        <div class="weekstrip">
+          @for (day of schedule(); track $index) {
+            <div class="wd">
+              <span class="dn">{{ dayNames[$index] }}</span>
+              @for (a of day; track $index) {
+                <span class="chip" [class]="'chip ' + a">{{ activityNames[a] }}</span>
+              } @empty {
+                <span class="chip rest">Rest</span>
+              }
+            </div>
+          }
+        </div>
+      </div>
+
+      <ul class="notes">
+        @for (note of v.program.notes; track note) {
+          <li>{{ note }}</li>
+        }
+      </ul>
+    </section>
+
+    <!-- Week tabs -->
+    <nav class="tabs" role="tablist" aria-label="Weeks">
+      @for (n of [1, 2, 3, 4]; track n) {
+        <button class="tab" role="tab" type="button"
+                [attr.aria-selected]="selectedWeek() === n" (click)="selectedWeek.set(n)">
+          Week {{ n }} · {{ weekTitles[n - 1] }}
+          @if (n > v.unlockedWeeks) {
+            <small>Members</small>
+          } @else {
+            <small>{{ doneInWeek(n) }}/{{ v.program.profile.workoutsPerWeek }}</small>
+          }
+        </button>
+      }
+    </nav>
+
+    @if (locked()) {
+      <!-- Locked week (free trial) -->
+      <section class="card locked">
+        <p class="eyebrow">Week {{ selectedWeek() }} · {{ weekTitles[selectedWeek() - 1] }}</p>
+        <h2>Weeks 2–4 are for members</h2>
+        <p>Your free trial includes week 1. Membership unlocks the full 4-week progression, plus a new, harder month every month after that.</p>
+        <button class="btn ball" type="button" disabled>Membership opens soon</button>
+      </section>
+    } @else if (week(); as w) {
+      <!-- Unlocked week -->
+      <div class="week-head">
+        <h2>Week {{ w.number }} · {{ w.title }}</h2>
+        <p>{{ w.instructions }}</p>
+      </div>
+
+      <div class="days">
+        @for (day of w.days; track day.label) {
+          <article class="card day" [class.done]="isDone(w.number, day.label)">
+            <div class="day-head">
+              <div>
+                <h3>Day {{ day.label }} · {{ categoryNames[day.focus] }}</h3>
+                <p class="meta">Warm-up: {{ warmUp() }}</p>
+              </div>
+              <label class="done-toggle">
+                <input type="checkbox"
+                       [checked]="isDone(w.number, day.label)"
+                       [disabled]="savingDay() !== null"
+                       (change)="toggle(w.number, day.label)">
+                {{ savingDay() === w.number + day.label ? 'Saving…' : 'Done' }}
+              </label>
+            </div>
+
+            @for (block of day.blocks; track block.category) {
+              <div class="block">
+                <p class="block-name">
+                  <i class="dot" [class]="'dot ' + block.category"></i>
+                  {{ categoryNames[block.category] }}@if (block.focus) { · focus}
+                </p>
+                @for (item of block.exercises; track item.exercise.id) {
+                  <details class="ex">
+                    <summary>
+                      <span class="ex-name">
+                        {{ item.exercise.name }}
+                        @if (item.exercise.plyometric) { <em>Jump</em> }
+                      </span>
+                      <span class="dose">
+                        {{ item.dose }}
+                        <small>RPE {{ item.rpe }}@if (item.suggestedLoadLbs) { · ~{{ item.suggestedLoadLbs }} lb}</small>
+                      </span>
+                    </summary>
+                    <p class="cue">{{ item.exercise.cue }}</p>
+                  </details>
+                }
+              </div>
+            }
+
+            <div class="block">
+              <p class="block-name">Cool-down</p>
+              <p class="cool">{{ coolDown }}</p>
+            </div>
+          </article>
+        }
+      </div>
     }
 
-    <button class="btn ghost" type="button" (click)="logout()">Log out</button>
-  </div>
+    <!-- Month progress -->
+    <section class="card month-bar">
+      <div class="progress">
+        <div class="track"><div class="fill" [style.width.%]="v.percentComplete"></div></div>
+        <p>Month {{ v.program.month }}: {{ v.completedCount }} of {{ v.totalWorkouts }} workouts done ({{ v.percentComplete }}%). Finish 75% to unlock Month {{ v.program.month + 1 }}.</p>
+      </div>
+      @if (isMember()) {
+        <button class="btn" type="button" [disabled]="!v.canStartNextMonth || startingMonth()"
+                (click)="startNextMonth()">
+          {{ startingMonth() ? 'Starting…' : 'Start Month ' + (v.program.month + 1) }}
+        </button>
+      } @else {
+        <span class="muted small">Month {{ v.program.month + 1 }} is for members</span>
+      }
+    </section>
+  }
 </main>
