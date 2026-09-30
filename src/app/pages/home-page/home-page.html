@@ -1,0 +1,9 @@
+<main class="home">
+  <div class="card panel">
+    <p class="eyebrow">Signed in</p>
+    <h1>{{ auth.account()?.email }}</h1>
+    <p>Plan: <strong>{{ auth.account()?.subscriptionStatus === 'ACTIVE' ? 'Member' : 'Free trial' }}</strong></p>
+    <p class="note">Your program screen arrives in step 6d.</p>
+    <button class="btn ghost" type="button" (click)="logout()">Log out</button>
+  </div>
+</main>

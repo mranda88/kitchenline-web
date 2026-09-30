@@ -1,0 +1,59 @@
+<main class="auth">
+  <div class="brand">
+    <svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true">
+      <rect x="2" y="6" width="40" height="32" rx="2" fill="none" stroke="var(--court)" stroke-width="2.5"/>
+      <line x1="22" y1="6" x2="22" y2="38" stroke="var(--ink)" stroke-width="2"/>
+      <line x1="16" y1="6" x2="16" y2="38" stroke="var(--kitchen)" stroke-width="2"/>
+      <line x1="28" y1="6" x2="28" y2="38" stroke="var(--kitchen)" stroke-width="2"/>
+      <circle cx="34" cy="14" r="5" fill="var(--ball)"/>
+    </svg>
+    <div>
+      <p class="name">Kitchen Line</p>
+      <p class="tag">Pickleball strength &amp; movement</p>
+    </div>
+  </div>
+
+  <form class="card panel" (ngSubmit)="submit()">
+    @if (mode() === 'signup') {
+      <h1>Start your free trial</h1>
+      <p class="sub">Get week 1 of a program built for your age, skill and court time.</p>
+    } @else {
+      <h1>Welcome back</h1>
+      <p class="sub">Log in to see this week's workouts.</p>
+    }
+
+    <label for="email">Email</label>
+    <input id="email" name="email" type="email" autocomplete="email"
+           [(ngModel)]="email" required>
+
+    <label for="password">Password</label>
+    <input id="password" name="password" type="password"
+           [attr.autocomplete]="mode() === 'signup' ? 'new-password' : 'current-password'"
+           [(ngModel)]="password" required>
+    @if (mode() === 'signup') {
+      <p class="hint">At least 8 characters.</p>
+    }
+
+    @if (error()) {
+      <p class="error" role="alert">{{ error() }}</p>
+    }
+
+    <button class="btn" type="submit" [disabled]="busy()">
+      @if (busy()) {
+        Please wait…
+      } @else if (mode() === 'signup') {
+        Create account
+      } @else {
+        Log in
+      }
+    </button>
+
+    <p class="switch">
+      @if (mode() === 'signup') {
+        Already have an account? <a routerLink="/login">Log in</a>
+      } @else {
+        New here? <a routerLink="/signup">Start a free trial</a>
+      }
+    </p>
+  </form>
+</main>

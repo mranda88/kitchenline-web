@@ -1,0 +1,15 @@
+.home {
+  min-height: 100dvh;
+  display: grid;
+  place-content: center;
+  padding: 32px 16px;
+}
+.panel {
+  width: min(420px, calc(100vw - 32px));
+  padding: 24px;
+  display: grid;
+  gap: 10px;
+}
+.panel h1 { font-size: 26px; overflow-wrap: anywhere; }
+.panel p { margin: 0; }
+.note { color: var(--muted); }
