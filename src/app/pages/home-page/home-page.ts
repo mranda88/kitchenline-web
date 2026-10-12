@@ -36,12 +36,8 @@ export class HomePage {
   // Values worked out from the state; they update automatically
   protected readonly program = computed(() => this.view()?.program);
   protected readonly profile = computed(() => this.program()?.profile);
-  protected readonly isMember = computed(
-    () => this.auth.account()?.subscriptionStatus === 'ACTIVE',
-  );
-  protected readonly locked = computed(
-    () => this.selectedWeek() > (this.view()?.unlockedWeeks ?? 1),
-  );
+
+
   protected readonly week = computed(
     () => this.program()?.weeks.find((w) => w.number === this.selectedWeek()) ?? null,
   );

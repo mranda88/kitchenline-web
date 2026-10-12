@@ -15,8 +15,8 @@
 
   <form class="card panel" (ngSubmit)="submit()">
     @if (mode() === 'signup') {
-      <h1>Start your free trial</h1>
-      <p class="sub">Get week 1 of a program built for your age, skill and court time.</p>
+      <h1>Create your account</h1>
+      <p class="sub">Get a 4-week program built for your age, skill and court time.</p>
     } @else {
       <h1>Welcome back</h1>
       <p class="sub">Log in to see this week's workouts.</p>
@@ -52,7 +52,7 @@
       @if (mode() === 'signup') {
         Already have an account? <a routerLink="/login">Log in</a>
       } @else {
-        New here? <a routerLink="/signup">Start a free trial</a>
+        New here? <a routerLink="/signup">Create an account</a>
       }
     </p>
   </form>
